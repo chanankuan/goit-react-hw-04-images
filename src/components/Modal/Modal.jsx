@@ -7,22 +7,22 @@ import Loader from 'components/Loader/Loader';
 const modalRoot = document.getElementById('modal-root');
 
 const Modal = ({ imageUrl, tags, onClose }) => {
-  const [image, setImage] = useState('');
+  const [isLoading, setIsLoading] = useState('');
 
   useEffect(() => {
-    window.addEventListener('keydown', handleClose);
+    const closeOnEsc = event => {
+      if (event.code === 'Escape') {
+        onClose();
+      }
+    };
 
-    return () => window.removeEventListener('keydown', handleClose);
+    window.addEventListener('keydown', closeOnEsc);
+
+    return () => window.removeEventListener('keydown', closeOnEsc);
   });
 
-  const handleClose = event => {
-    if (event.code === 'Escape' || event.currentTarget === event.target) {
-      onClose();
-    }
-  };
-
   const handleImageLoaded = () => {
-    setImage('loaded');
+    setIsLoading('loaded');
   };
 
   const modal = {
@@ -43,7 +43,7 @@ const Modal = ({ imageUrl, tags, onClose }) => {
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       className={styles.Overlay}
-      onClick={handleClose}
+      onClick={onClose}
     >
       <motion.div
         variants={modal}
@@ -52,7 +52,7 @@ const Modal = ({ imageUrl, tags, onClose }) => {
         exit="exit"
         className={styles.Modal}
       >
-        {!image && <Loader className={styles.Loader} />}
+        {!isLoading && <Loader className={styles.Loader} />}
         <img
           src={imageUrl}
           alt={tags}

@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import { AnimatePresence } from 'framer-motion';
 import { Notify } from 'notiflix/build/notiflix-notify-aio';
 
@@ -8,7 +9,6 @@ import Button from 'components/Buton/Button';
 import Loader from 'components/Loader/Loader';
 import NoResult from 'components/NoResults/NoResults';
 import Modal from 'components/Modal/Modal';
-import { useCallback, useEffect, useState } from 'react';
 
 const App = () => {
   const [images, setImages] = useState([]);
@@ -20,35 +20,37 @@ const App = () => {
   const [modalImageUrl, setModalImageUrl] = useState('');
   const [modalImageTags, setModalImageTags] = useState('');
 
-  const handleSearch = useCallback(async () => {
-    try {
-      setIsLoading(true);
-      const { data } = await getImages(query, page);
-      if (data.totalHits === 0) {
-        Notify.failure(
-          'Sorry, there are no images matching your search query. Please try again.'
-        );
-        return;
-      }
-
-      if (page === 1) {
-        Notify.success(`Hooray! We found ${data.totalHits} images.`);
-      }
-
-      setImages(prevImages => [...prevImages, ...data.hits]);
-      setLoadMore(page < Math.ceil(data.totalHits / 12));
-    } catch (error) {
-      Notify.failure(error);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [query, page]);
-
   useEffect(() => {
-    if (query) {
-      handleSearch();
+    const handleSearch = async () => {
+      try {
+        setIsLoading(true);
+        const { data } = await getImages(query, page);
+        if (data.totalHits === 0) {
+          Notify.failure(
+            'Sorry, there are no images matching your search query. Please try again.'
+          );
+          return;
+        }
+
+        if (page === 1) {
+          Notify.success(`Hooray! We found ${data.totalHits} images.`);
+        }
+
+        setImages(prevImages => [...prevImages, ...data.hits]);
+        setLoadMore(page < Math.ceil(data.totalHits / 12));
+      } catch (error) {
+        Notify.failure(error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    if (!query) {
+      return;
     }
-  }, [handleSearch, query, page]);
+
+    handleSearch();
+  }, [query, page]);
 
   const onSubmit = searchQuery => {
     if (query === searchQuery) {
